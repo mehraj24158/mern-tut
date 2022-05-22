@@ -6,8 +6,7 @@ const { update } = require('../models/goalModel')
 // @route    GET /api/goals
 // @access   Private
 const getGoals = asyncHandler(async (req, res) => {
-    const goals = await Goal.find()
-
+    const goals = await Goal.find({user: req.user.id})
 
     res.status(200).json(goals)
 })
@@ -23,12 +22,12 @@ const postGoal = asyncHandler(async (req, res) => {
     
 
     const goal = await Goal.create({
-        text: req.body.text
+        text: req.body.text,
+        user: req.user.id
     })
 
     console.log(goal)
     res.status(200).json(goal)
-
 })
 
 
@@ -38,6 +37,11 @@ const postGoal = asyncHandler(async (req, res) => {
 const putGoal = asyncHandler(async (req, res) => {
 
     const goal = await Goal.findById(req.params.id)
+
+    if (req.user.id !== goal.user.id) {
+        res.status(400)
+        throw new Error('Invalid authentication')
+    }
 
     if (!goal) {
         res.status(400)
@@ -55,6 +59,11 @@ const putGoal = asyncHandler(async (req, res) => {
 const deleteGoal = asyncHandler(async (req, res) => {
 
     const goal = await Goal.findById(req.params.id)
+
+    if (req.user.id != goal.user.id) {
+        res.status(400)
+        throw new Error('Invalid authentication')
+    }
 
     if (!goal) {
         res.status(400)
